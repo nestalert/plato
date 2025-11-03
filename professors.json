@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Dr. John Smith",
+    "title": "Professor of Computer Science",
+    "email": "john.smith@university.edu",
+    "phone": "(555) 123-4567",
+    "office": "Building A, Room 301",
+    "office_hours": "Monday & Wednesday 2-4 PM",
+    "department": "Computer Science",
+    "aliases": ["Professor Smith", "Dr. Smith", "John Smith"]
+  },
+  {
+    "name": "Dr. Jane Doe",
+    "title": "Associate Professor of Mathematics",
+    "email": "jane.doe@university.edu",
+    "phone": "(555) 987-6543",
+    "office": "Math Building, Room 205",
+    "office_hours": "Tuesday & Thursday 1-3 PM",
+    "department": "Mathematics",
+    "aliases": ["Professor Doe", "Dr. Doe"]
+  }
+]

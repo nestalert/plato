@@ -1,0 +1,169 @@
+[
+    {
+      "tag": "greeting",
+      "patterns": [
+        "Hi", 
+        "Hello", 
+        "How are you?", 
+        "What's up", 
+        "Good morning", 
+        "Good afternoon", 
+        "Hey there", 
+        "Greetings", 
+        "Howdy", 
+        "Yo",
+        "Wake up"
+      ],
+      "responses": [
+        "Hello! How can I assist you with university information today?", 
+        "Hi there, what can I help you find?"
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "help",
+      "patterns": [
+        "Help", 
+        "I need help", 
+        "What can you do", 
+        "options", 
+        "What are my options?", 
+        "Can you assist me?", 
+        "Tell me what you know", 
+        "What services do you offer?", 
+        "I'm stuck"
+      ],
+      "responses": [
+        "I can help you with finding your schedule, class, contact information, or suggest classes for you to take.",
+        "If you want further help, you can contact Administration: [[administration]]"
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "schedule",
+      "patterns": [
+        "What's the schedule?", 
+        "What time is class?", 
+        "When does class start?", 
+        "Where is class", 
+        "Where is my lab", 
+        "Which room has my class", 
+        "Class times", 
+        "Academic calendar", 
+        "Show me my timetable", 
+        "What building is my lecture in?", 
+        "When is the next lecture for [course name]?"
+      ],
+      "responses": [
+        "See the Schedule for information on the time and place of classes: [[Schedule]]", 
+        "The Schedule can be found here: [[Schedule]] "
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "class_selection",
+      "patterns": [
+        "What classes should I take?", 
+        "Lessons needed to graduate", 
+        "Classes left", 
+        "Next class needed", 
+        "Degree requirements", 
+        "What courses do I need to finish?", 
+        "Recommend a class for next semester", 
+        "Can you check my course progress?", 
+        "Prerequisites for [course name]",
+        "my grades",
+        "grades"
+      ],
+      "responses": [
+        "You could check out the Schedule for undergraduates: [[Schedule]], or log in for personal advisement."
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "teacher",
+      "patterns": [
+        "Contact",
+        "Teacher information",
+        "Who is teacher",
+        "My teacher", 
+        "What's the email of", 
+        "Phone number of", 
+        "Professor's office hours", 
+        "Who is professor",
+        "How do I reach teacher?", 
+        "Faculty contact details", 
+        "Where is professor office?",
+        "Faculty"
+      ],
+      "responses": [
+        "All contact information can be found on the faculty page: [[faculty]]. If you type the specific name of the teacher, I can give you their contact information."
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "admin",
+      "patterns": [
+        "Admin",
+        "representative",
+        "human",
+        "Contact administration",
+        "Email administration",
+        "Talk to a person",
+        "Connect me with staff"
+      ],
+      "responses": [
+        "You can contact administration here: [[administration]]",
+        "Administration can be reached here: [[administration]]"
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "event",
+      "patterns": [
+        "What's happening?",
+        "Any events?",
+        "What's going on in campus",
+        "Recent events",
+        "Upcoming activities",
+        "Student union events",
+        "Are there any special lectures this week?",
+        "Campus calendar"
+      ],
+      "responses": [
+        "There's always something happening in the university! Check the events page for more: [[events]] "
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "postgrad",
+      "patterns": [
+        "Postgrad",
+        "Where to apply for postgrad",
+        "Graduate programs",
+        "Masters applications",
+        "PhD requirements",
+        "Applying for a higher degree"
+      ],
+      "responses": [
+        "You should read up on the postgrad page: [[postgrad]]"
+      ],
+      "context_set": ""
+    },
+    {
+      "tag": "exit",
+      "patterns": [
+        "Exit",
+        "Quit",
+        "Close",
+        "Leave",
+        "Shutdown",
+        "Close the chatbot",
+        "Goodbye"
+      ],
+      "responses": [
+        "If you want to reset the chatbot, please exit the page or reload."
+      ],
+      "context_set": "" 
+    }
+]
