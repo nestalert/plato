@@ -73,6 +73,10 @@ class IntentChatbot:
         text = text.lower()
         text = re.sub(r'[^\w\s]', '', text)
         words = text.split()
+
+        if len(words) <= 2: #if the query is short.
+            return " ".join(words)
+
         stop_words = set(stopwords.words('english'))
         stemmer = PorterStemmer()
         words = [stemmer.stem(w) for w in words if w not in stop_words]
@@ -97,7 +101,7 @@ class IntentChatbot:
         X, y = self.prepare_training_data()
 
         self.model = Pipeline([
-            ('tfidf', TfidfVectorizer(ngram_range=(1, 2), max_features=1000)),
+            ('tfidf', TfidfVectorizer()),
             ('clf', LogisticRegression(max_iter=200, random_state=42))
         ])
         
@@ -167,6 +171,10 @@ class IntentChatbot:
         
         predicted_tag, confidence = self.predict_intent(user_input)
         
+        word_count = len(user_input.split())
+        if word_count <= 2: #If input is short, go easy
+                confidence_threshold = 0.1
+
         if confidence < confidence_threshold:
             return "I'm not sure I understand. Could you rephrase that or type 'help' for options?"
         

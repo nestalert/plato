@@ -19,6 +19,21 @@
         #chat-box::-webkit-scrollbar-track {
             background: #f1f5f9; /* Slate-100 */
         }
+        
+        /* Typing cursor animation */
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background-color: currentColor;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
     </style>
     <script>
         tailwind.config = {
@@ -127,6 +142,56 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // Typing effect function for bot messages
+        async function displayTypingMessage(sender, text, isSystem = false) {
+            const chatBox = document.getElementById('chat-box');
+            const p = document.createElement('p');
+
+            // Apply classes based on sender
+            let senderClass = sender === 'You' ? 'text-right' : 'text-left';
+            let bubbleClass = sender === 'You' 
+                ? 'bg-indigo-500 text-white ml-auto' 
+                : (isSystem ? 'bg-red-100 text-red-800' : 'bg-white text-gray-800 mr-auto border border-gray-200');
+
+            p.className = `max-w-xs md:max-w-sm px-4 py-2 rounded-xl shadow-sm inline-block ${bubbleClass}`;
+            const outerDiv = document.createElement('div');
+            outerDiv.className = `${senderClass} flex`;
+
+            outerDiv.appendChild(p);
+            chatBox.appendChild(outerDiv);
+
+            // Add typing cursor
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            p.appendChild(cursor);
+
+            // Type out the message character by character
+            let currentText = '';
+            const characters = text.split('');
+            
+            for (let i = 0; i < characters.length; i++) {
+                currentText += characters[i];
+                
+                // Format text with links and line breaks
+                let formattedText = currentText.replace(/\n/g, '<br>');
+                const urlRegex = /(\b(https?:\/\/[^\s]+))/g;
+                formattedText = formattedText.replace(urlRegex, function(url) {
+                    return '<a href="' + url + '" target="_blank" class="text-indigo-200 hover:text-indigo-100 underline">' + url + '</a>';
+                });
+                
+                p.innerHTML = (isSystem ? `<strong>${sender}:</strong> ` : '') + formattedText;
+                p.appendChild(cursor);
+                
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                // Adjust typing speed (5ms per character, adjust as needed)
+                await new Promise(resolve => setTimeout(resolve, 5));
+            }
+
+            // Remove cursor after typing is complete
+            cursor.remove();
+        }
+
         async function initBot() {
             const uname = document.getElementById('uname-input').value.trim();
             const pwd = document.getElementById('pwd-input').value.trim();
@@ -154,8 +219,8 @@
                     userInput.disabled = false;
                     sendButton.disabled = false;
                     
-                    // Display the welcome message from the bot
-                    displayMessage('Bot', data.welcome_message || "Chatbot successfully initialized!", false);
+                    // Display the welcome message from the bot with typing effect
+                    await displayTypingMessage('Bot', data.welcome_message || "Chatbot successfully initialized!", false);
                     document.title = "Chat Ready";
 
                 } else {
@@ -173,7 +238,7 @@
         }
 
 
-        function sendMessage() {
+        async function sendMessage() {
             const message = userInput.value;
             if (!message.trim()) return;
 
@@ -182,26 +247,28 @@
             userInput.disabled = true;
             sendButton.disabled = true;
             
-            fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                displayMessage('Bot', data.response);
-            })
-            .catch(error => {
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Display bot response with typing effect
+                await displayTypingMessage('Bot', data.response);
+                
+            } catch (error) {
                 console.error('Error:', error);
                 displayMessage('System', 'Error connecting to the bot.', true);
-            })
-            .finally(() => {
+            } finally {
                 userInput.disabled = false;
                 sendButton.disabled = false;
                 userInput.focus();
-            });
+            }
         }
     </script>
 </body>

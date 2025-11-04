@@ -23,8 +23,7 @@
     {
       "tag": "help",
       "patterns": [
-        "Help", 
-        "I need help", 
+        "Help",  
         "What can you do", 
         "options", 
         "What are my options?", 
@@ -34,8 +33,7 @@
         "I'm stuck"
       ],
       "responses": [
-        "I can help you with finding your schedule, class, contact information, or suggest classes for you to take.",
-        "If you want further help, you can contact Administration: [[administration]]"
+        "I can help you with finding your schedule, class, contact information, or suggest classes for you to take."
       ],
       "context_set": ""
     },
