@@ -59,7 +59,7 @@ def get_bot_response(user_input):
         
     user_input = user_input.lower().strip()
         
-    response = GLOBAL_BOT.get_response(user_input)
+    response, predicted_tag = GLOBAL_BOT.get_response(user_input)
     response = GLOBAL_BOT.replace_links(response)
     
     return response
