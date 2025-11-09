@@ -1,8 +1,9 @@
 {
-    "[[advisement]]": "{LINK 2}",
     "[[administration]]": "https://ice.uniwa.gr/contact/",
-    "[[Schedule]]": "{LINK 4}",
-    "[[faculty]]": "{LINK 5}",
-    "[[events]]": "{LINK 6}",
-    "[[postgrad]]": "{LINK 7}"
+    "[[Schedule]]": "https://www.uniwa.gr/epikairotita/akadimaiko-imerologio/",
+    "[[faculty]]": "https://ice.uniwa.gr/emd_person/",
+    "[[events]]": "https://events.uniwa.gr/events/",
+    "[[postgrad]]": "https://ice.uniwa.gr/education/postgraduate/",
+    "[[transport]]": "https://www.uniwa.gr/to-panepistimio/odigos-prosvasis-sto-panepistimio-dytikis-attikis/",
+    "[[map]]": "https://campusplan.uniwa.gr/"
 }

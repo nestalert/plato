@@ -68,17 +68,12 @@ class IntentChatbot:
             print(f"Error saving feedback: {e}")
     
     def add_feedback(self, user_query, correct_tag):
-        """Add or update feedback for a user query"""
-        processed_query = self.preprocess_text(user_query)
-        
-        if processed_query in self.feedback_data:
-            # Increase weight for repeated corrections
-            self.feedback_data[processed_query]['weight'] += 1
+        if user_query.lower() in self.feedback_data:
+            self.feedback_data[user_query.lower()]['weight'] += 1
         else:
-            # New feedback entry
-            self.feedback_data[processed_query] = {
+            self.feedback_data[user_query.lower()] = {
                 'correct_tag': correct_tag,
-                'weight': 1.5  # Higher weight than original patterns
+                'weight': 1.5
             }
         
         self.save_feedback()
@@ -86,16 +81,17 @@ class IntentChatbot:
         print(f"Feedback recorded: '{user_query}' -> {correct_tag}")
     
     def update_feedback_vectors(self):
-        """Update TF-IDF vectors for feedback data"""
         if not self.feedback_data or self.vectorizer is None:
             return
         
         feedback_queries = list(self.feedback_data.keys())
+
+        processed_queries = [self.preprocess_text(q) for q in feedback_queries]
+        
         self.feedback_tags = [self.feedback_data[q]['correct_tag'] for q in feedback_queries]
         self.feedback_weights = [self.feedback_data[q]['weight'] for q in feedback_queries]
         
-        # Transform feedback queries using existing vectorizer
-        self.feedback_vectors = self.vectorizer.transform(feedback_queries)
+        self.feedback_vectors = self.vectorizer.transform(processed_queries)
 
     def detect_professor(self, user_input):
         user_input_lower = user_input.lower()
@@ -225,30 +221,25 @@ class IntentChatbot:
             self.train()
     
     def predict_intent(self, user_input):
-        # Transform user input into TF-IDF vector
         processed_input = self.preprocess_text(user_input)
         input_vector = self.vectorizer.transform([processed_input])
         
-        # Calculate cosine similarity with original patterns
         similarities = cosine_similarity(input_vector, self.pattern_vectors)[0]
         best_match_idx = np.argmax(similarities)
         best_similarity = similarities[best_match_idx]
         predicted_tag = self.pattern_tags[best_match_idx]
         
-        # Check feedback data with weighted similarities
         if self.feedback_vectors is not None and len(self.feedback_tags) > 0:
             feedback_similarities = cosine_similarity(input_vector, self.feedback_vectors)[0]
             
-            # Apply weights to feedback similarities
             weighted_feedback = feedback_similarities * np.array(self.feedback_weights)
             
             best_feedback_idx = np.argmax(weighted_feedback)
             best_feedback_similarity = weighted_feedback[best_feedback_idx]
             
-            # If feedback match is better, use it
             if best_feedback_similarity > best_similarity:
                 predicted_tag = self.feedback_tags[best_feedback_idx]
-                best_similarity = feedback_similarities[best_feedback_idx]  # Return unweighted for confidence
+                best_similarity = feedback_similarities[best_feedback_idx]
         
         return predicted_tag, best_similarity
     
@@ -264,7 +255,7 @@ class IntentChatbot:
             confidence_threshold = 0.1
 
         if confidence < confidence_threshold:
-            return "I'm not sure I understand. Could you rephrase that or type 'help' for options?", None
+            predicted_tag = "fallback"
         
         intent = self.tag_to_intent[predicted_tag]
         response = random.choice(intent['responses'])
@@ -276,7 +267,6 @@ class IntentChatbot:
             printed_output += "You can also check the Schedule at any time: [[Schedule]]"
             response = printed_output
 
-        # Return both response and predicted tag for feedback
         return response, (predicted_tag if ask_feedback else None)
 
     def replace_links(self, response):
@@ -285,17 +275,14 @@ class IntentChatbot:
         return response
     
     def get_available_intents(self):
-        """Return a list of available intent tags and their descriptions"""
         intents_list = []
         for intent in self.intents:
             tag = intent['tag']
-            # Get first pattern as example
             example = intent['patterns'][0] if intent['patterns'] else 'N/A'
             intents_list.append(f"{tag}: {example}")
         return intents_list
 
-    def handle_feedback(self, last_user_input):
-        """Handle user feedback for incorrect intent classification."""
+    def handle_feedback(self, last_user_input,correct_tag = None):
         print("\nWhat should the correct intent be?")
         print("Available intents:")
         for i, intent_info in enumerate(self.get_available_intents(), 1):

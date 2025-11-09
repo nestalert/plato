@@ -62,7 +62,7 @@ def get_bot_response(user_input):
     response, predicted_tag = GLOBAL_BOT.get_response(user_input)
     response = GLOBAL_BOT.replace_links(response)
     
-    return response
+    return response, predicted_tag
 
 @app.route('/')
 def index():
@@ -83,10 +83,32 @@ def chat_endpoint():
     if not user_message:
         return jsonify({"response": "Please enter a message."})
         
-    bot_response = get_bot_response(user_message)
+    bot_response,predicted_tag = get_bot_response(user_message)
     
-    return jsonify({'response': bot_response})
+    return jsonify({'response': bot_response,'predicted_tag': predicted_tag})
 
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json()
+    if not data or 'last_user_input' not in data or 'correct_intent' not in data:
+        return jsonify({"error": "Missing 'last_user_input' or 'correct_intent' in request"}), 400
 
+    last_user_input = data['last_user_input']
+    correct_intent = data['correct_intent']
+
+    try:
+        GLOBAL_BOT.add_feedback(last_user_input, correct_intent)
+        return jsonify({"message": "Thank you! I'll remember that."}), 200
+    except KeyError:
+        return jsonify({"error": "Invalid intent tag. Feedback not recorded."}), 400
+
+@app.route('/get_intents', methods=['GET'])
+def get_intents():
+    try:
+        intents = GLOBAL_BOT.get_available_intents()
+        return jsonify({"intents": intents}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to retrieve intents: {str(e)}"}), 500
+   
 if __name__ == '__main__':
     app.run()

@@ -43,21 +43,34 @@
         "What's the schedule?", 
         "What time is class?", 
         "When does class start?", 
-        "Where is class", 
-        "Where is my lab", 
-        "Which room has my class", 
         "Class times", 
         "Academic calendar", 
         "Show me my timetable", 
-        "What building is my lecture in?", 
         "When is the next lecture for [course name]?"
       ],
       "responses": [
-        "See the Schedule for information on the time and place of classes: [[Schedule]]", 
-        "The Schedule can be found here: [[Schedule]] "
+        "See the schedule for information on the time and place of classes: [[Schedule]]", 
+        "The schedule with the location and time of classes can be found here: [[Schedule]]"
       ],
       "context_set": ""
     },
+    {
+      "tag": "map",
+      "patterns": [
+        "Where is class", 
+        "Where is my lab", 
+        "Which room has my class", 
+        "What building is my lecture in?", 
+        "Campus map",
+        "Map of campus",
+        "I'm lost"
+      ],
+      "responses": [
+        "If you're lost, you can use the interactive map: [[map]]",
+        "The map is here: [[map]]. Remember, if your class is e.g. K16.213, K16 denotes the building, while the first digit after the dot (2) denotes the floor."
+      ],
+      "context_set": ""
+    },      
     {
       "tag": "class_selection",
       "patterns": [
@@ -126,7 +139,7 @@
         "Upcoming activities",
         "Student union events",
         "Are there any special lectures this week?",
-        "Campus calendar"
+        "What is happening"
       ],
       "responses": [
         "There's always something happening in the university! Check the events page for more: [[events]] "
@@ -141,12 +154,30 @@
         "Graduate programs",
         "Masters applications",
         "PhD requirements",
-        "Applying for a higher degree"
+        "Applying for a higher degree",
+        "After graduation"
       ],
       "responses": [
         "You should read up on the postgrad page: [[postgrad]]"
       ],
       "context_set": ""
+    },
+    {
+      "tag": "location",
+      "patterns": [
+        "Where is campus",
+        "How to get to class",
+        "Bus service",
+        "Metro",
+        "Subway",
+        "Transportation",
+        "How to reach campus",
+        "Transit"
+      ],
+      "responses": [
+        "We are located in Campus 1. To learn more about reaching Campus 1, click here: [[transport]]"
+      ],
+      "context_set": "" 
     },
     {
       "tag": "exit",
@@ -161,6 +192,18 @@
       ],
       "responses": [
         "If you want to reset the chatbot, please exit the page or reload."
+      ],
+      "context_set": "" 
+    },
+    {
+      "tag": "fallback",
+      "patterns": 
+      [
+      ],
+      "responses": [
+        "I'm not sure I understand. Could you rephrase that or type 'help' for options?",
+        "I cannot have conversations. If your issue is too abstract, kindly contact administration: [[administration]]",
+        "I don't understand. Please try to use more keywords relevant to your query."
       ],
       "context_set": "" 
     }

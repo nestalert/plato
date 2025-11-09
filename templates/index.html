@@ -5,22 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Chatbot Client</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom scrollbar for chat-box */
         #chat-box::-webkit-scrollbar {
             width: 8px;
         }
         #chat-box::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* Slate-300 */
+            background-color: #cbd5e1; 
             border-radius: 4px;
         }
         #chat-box::-webkit-scrollbar-track {
-            background: #f1f5f9; /* Slate-100 */
+            background: #f1f5f9;
         }
         
-        /* Typing cursor animation */
         .typing-cursor {
             display: inline-block;
             width: 2px;
@@ -49,11 +46,9 @@
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 font-sans">
     
-    <!-- Main Application Container -->
     <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 md:p-8">
         <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Counsel Chatbot</h1>
 
-        <!-- 1. LOGIN SCREEN -->
         <div id="login-container">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Bot Initialization</h2>
             <div id="login-error" class="mb-4 text-red-600 font-medium hidden"></div>
@@ -81,10 +76,8 @@
             </div>
         </div>
 
-        <!-- 2. CHAT SCREEN (Initially hidden) -->
         <div id="chat-container" class="hidden">
             <div id="chat-box" class="h-80 bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4 overflow-y-scroll space-y-2">
-                <!-- Messages will appear here -->
             </div>
             
             <div class="flex">
@@ -95,182 +88,217 @@
                     Send
                 </button>
             </div>
+            <div class="flex mt-2">
+                <button onclick="correctResponse()"
+                        id="correct-button"
+                        class="w-full py-2 px-4 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 transition duration-200 disabled:opacity-50">
+                    Correct Response
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        const loginContainer = document.getElementById('login-container');
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sendButton = document.getElementById('send-button');
-        const loginError = document.getElementById('login-error');
-        const loadingSpinner = document.getElementById('loading-spinner');
+    const loginContainer = document.getElementById('login-container');
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const loginError = document.getElementById('login-error');
+    const loadingSpinner = document.getElementById('loading-spinner');
 
-        // Allow 'Enter' key to send message only when chat is active
-        userInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && !sendButton.disabled) {
-                event.preventDefault(); 
-                sendMessage();
-            }
-        });
+    let lastUserMessage = "";
+    let isAwaitingCorrection = false; // Track if we're waiting for user to type correct intent
 
-        function displayMessage(sender, text, isSystem = false) {
-            const chatBox = document.getElementById('chat-box');
-            const p = document.createElement('p');
+    // Allow 'Enter' key to send message only when chat is active
+    userInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !sendButton.disabled) {
+            event.preventDefault(); 
+            sendMessage();
+        }
+    });
 
-            // Apply classes based on sender
-            let senderClass = sender === 'You' ? 'text-right' : 'text-left';
-            let bubbleClass = sender === 'You' 
-                ? 'bg-indigo-500 text-white ml-auto' 
-                : (isSystem ? 'bg-red-100 text-red-800' : 'bg-white text-gray-800 mr-auto border border-gray-200');
+    function displayMessage(sender, text, isSystem = false) {
+        const chatBox = document.getElementById('chat-box');
+        const p = document.createElement('p');
 
-            p.className = `max-w-xs md:max-w-sm px-4 py-2 rounded-xl shadow-sm inline-block ${bubbleClass}`;
-            const outerDiv = document.createElement('div');
-            outerDiv.className = `${senderClass} flex`;
+        // Apply classes based on sender
+        let senderClass = sender === 'You' ? 'text-right' : 'text-left';
+        let bubbleClass = sender === 'You' 
+            ? 'bg-indigo-500 text-white ml-auto' 
+            : (isSystem ? 'bg-red-100 text-red-800' : 'bg-white text-gray-800 mr-auto border border-gray-200');
 
-            // Handle links and line breaks
-            let formattedText = text.replace(/\n/g, '<br>');
+        p.className = `max-w-xs md:max-w-sm px-4 py-2 rounded-xl shadow-sm inline-block ${bubbleClass}`;
+        const outerDiv = document.createElement('div');
+        outerDiv.className = `${senderClass} flex`;
+
+        // Handle links and line breaks
+        let formattedText = text.replace(/\n/g, '<br>');
+        const urlRegex = /(\b(https?:\/\/[^\s]+))/g;
+        formattedText = formattedText.replace(urlRegex, url => 
+            `<a href="${url}" target="_blank" class="text-indigo-600 underline">${url}</a>`
+        );
+        
+        p.innerHTML = isSystem ? `<strong>${sender}:</strong> ${formattedText}` : formattedText; 
+        outerDiv.appendChild(p);
+        chatBox.appendChild(outerDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function displayTypingMessage(sender, text, isSystem = false) {
+        const chatBox = document.getElementById('chat-box');
+        const p = document.createElement('p');
+        const outerDiv = document.createElement('div');
+        let senderClass = sender === 'You' ? 'text-right' : 'text-left';
+        let bubbleClass = sender === 'You' 
+            ? 'bg-indigo-500 text-white ml-auto' 
+            : (isSystem ? 'bg-red-100 text-red-800' : 'bg-white text-gray-800 mr-auto border border-gray-200');
+
+        p.className = `max-w-xs md:max-w-sm px-4 py-2 rounded-xl shadow-sm inline-block ${bubbleClass}`;
+        outerDiv.className = `${senderClass} flex`;
+        outerDiv.appendChild(p);
+        chatBox.appendChild(outerDiv);
+
+        const cursor = document.createElement('span');
+        cursor.className = 'typing-cursor';
+        p.appendChild(cursor);
+
+        let currentText = '';
+        const characters = text.split('');
+        for (let ch of characters) {
+            currentText += ch;
+            let formatted = currentText.replace(/\n/g, '<br>');
             const urlRegex = /(\b(https?:\/\/[^\s]+))/g;
-            formattedText = formattedText.replace(urlRegex, function(url) {
-                return '<a href="' + url + '" target="_blank" class="text-indigo-200 hover:text-indigo-100 underline">' + url + '</a>';
-            });
-            
-            p.innerHTML = isSystem ? `<strong>${sender}:</strong> ${formattedText}` : formattedText; 
-            
-            outerDiv.appendChild(p);
-            chatBox.appendChild(outerDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Typing effect function for bot messages
-        async function displayTypingMessage(sender, text, isSystem = false) {
-            const chatBox = document.getElementById('chat-box');
-            const p = document.createElement('p');
-
-            // Apply classes based on sender
-            let senderClass = sender === 'You' ? 'text-right' : 'text-left';
-            let bubbleClass = sender === 'You' 
-                ? 'bg-indigo-500 text-white ml-auto' 
-                : (isSystem ? 'bg-red-100 text-red-800' : 'bg-white text-gray-800 mr-auto border border-gray-200');
-
-            p.className = `max-w-xs md:max-w-sm px-4 py-2 rounded-xl shadow-sm inline-block ${bubbleClass}`;
-            const outerDiv = document.createElement('div');
-            outerDiv.className = `${senderClass} flex`;
-
-            outerDiv.appendChild(p);
-            chatBox.appendChild(outerDiv);
-
-            // Add typing cursor
-            const cursor = document.createElement('span');
-            cursor.className = 'typing-cursor';
+            formatted = formatted.replace(urlRegex, url => 
+                `<a href="${url}" target="_blank" class="text-indigo-600 underline">${url}</a>`
+            );
+            p.innerHTML = (isSystem ? `<strong>${sender}:</strong> ` : '') + formatted;
             p.appendChild(cursor);
-
-            // Type out the message character by character
-            let currentText = '';
-            const characters = text.split('');
-            
-            for (let i = 0; i < characters.length; i++) {
-                currentText += characters[i];
-                
-                // Format text with links and line breaks
-                let formattedText = currentText.replace(/\n/g, '<br>');
-                const urlRegex = /(\b(https?:\/\/[^\s]+))/g;
-                formattedText = formattedText.replace(urlRegex, function(url) {
-                    return '<a href="' + url + '" target="_blank" class="text-indigo-200 hover:text-indigo-100 underline">' + url + '</a>';
-                });
-                
-                p.innerHTML = (isSystem ? `<strong>${sender}:</strong> ` : '') + formattedText;
-                p.appendChild(cursor);
-                
-                chatBox.scrollTop = chatBox.scrollHeight;
-                
-                // Adjust typing speed (5ms per character, adjust as needed)
-                await new Promise(resolve => setTimeout(resolve, 5));
-            }
-
-            // Remove cursor after typing is complete
-            cursor.remove();
+            chatBox.scrollTop = chatBox.scrollHeight;
+            await new Promise(res => setTimeout(res, 5));
         }
+        cursor.remove();
+    }
 
-        async function initBot() {
-            const uname = document.getElementById('uname-input').value.trim();
-            const pwd = document.getElementById('pwd-input').value.trim();
-            
-            if (!uname || !pwd) {
-                loginError.textContent = "Please enter both username and password.";
-                loginError.classList.remove('hidden');
-                return;
-            }
-
-            // Show loading state
-            loadingSpinner.classList.remove('hidden');
-            loginError.classList.add('hidden');
-
-            const apiUrl = `/init_bot?uname=${encodeURIComponent(uname)}&pwd=${encodeURIComponent(pwd)}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Success: Switch to chat interface
-                    loginContainer.classList.add('hidden');
-                    chatContainer.classList.remove('hidden');
-                    userInput.disabled = false;
-                    sendButton.disabled = false;
-                    
-                    // Display the welcome message from the bot with typing effect
-                    await displayTypingMessage('Bot', data.welcome_message || "Chatbot successfully initialized!", false);
-                    await displayTypingMessage('Bot', "My name is PLATO, what can I help you with today?", false);
-                    document.title = "Chat Ready";
-
-                } else {
-                    // Failure: Display error message
-                    loginError.textContent = `Initialization failed: ${data.message || 'Unknown error'}`;
-                    loginError.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Network Error:', error);
-                loginError.textContent = 'Network error: Could not connect to the server.';
-                loginError.classList.remove('hidden');
-            } finally {
-                loadingSpinner.classList.add('hidden');
-            }
+    async function initBot() {
+        const uname = document.getElementById('uname-input').value.trim();
+        const pwd = document.getElementById('pwd-input').value.trim();
+        if (!uname || !pwd) {
+            loginError.textContent = "Please enter both username and password.";
+            loginError.classList.remove('hidden');
+            return;
         }
+        loadingSpinner.classList.remove('hidden');
+        loginError.classList.add('hidden');
 
-
-        async function sendMessage() {
-            const message = userInput.value;
-            if (!message.trim()) return;
-
-            displayMessage('You', message);
-            userInput.value = '';
-            userInput.disabled = true;
-            sendButton.disabled = true;
-            
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-                
-                const data = await response.json();
-                
-                // Display bot response with typing effect
-                await displayTypingMessage('Bot', data.response);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                displayMessage('System', 'Error connecting to the bot.', true);
-            } finally {
+        try {
+            const res = await fetch(`/init_bot?uname=${encodeURIComponent(uname)}&pwd=${encodeURIComponent(pwd)}`);
+            const data = await res.json();
+            if (res.ok) {
+                loginContainer.classList.add('hidden');
+                chatContainer.classList.remove('hidden');
                 userInput.disabled = false;
                 sendButton.disabled = false;
-                userInput.focus();
+                await displayTypingMessage('Bot', data.welcome_message || "Chatbot initialized!");
+                await displayTypingMessage('Bot', "My name is PLATO, what can I help you with today?");
+            } else {
+                loginError.textContent = `Initialization failed: ${data.message || 'Unknown error'}`;
+                loginError.classList.remove('hidden');
             }
+        } catch (e) {
+            console.error(e);
+            loginError.textContent = 'Network error: could not connect.';
+            loginError.classList.remove('hidden');
+        } finally {
+            loadingSpinner.classList.add('hidden');
         }
-    </script>
+    }
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+        displayMessage('You', message);
+        userInput.value = '';
+
+        if (isAwaitingCorrection) {
+            await sendCorrection(message);
+            isAwaitingCorrection = false;
+            return;
+        }
+
+        lastUserMessage = message;
+        userInput.disabled = true;
+        sendButton.disabled = true;
+        
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message })
+            });
+            const data = await res.json();
+            await displayTypingMessage('Bot', data.response);
+        } catch (err) {
+            console.error(err);
+            displayMessage('System', 'Error connecting to the bot.', true);
+        } finally {
+            userInput.disabled = false;
+            sendButton.disabled = false;
+            userInput.focus();
+        }
+    }
+
+    async function correctResponse() {
+        if (!lastUserMessage) {
+            displayMessage('System', 'No previous user message to correct.', true);
+            return;
+        }
+
+        let intents = [];
+        try {
+            const res = await fetch('/get_intents');
+            const data = await res.json();
+            if (res.ok && data.intents) {
+                intents = data.intents;
+            } else {
+                throw new Error(data.error || "No intents received");
+            }
+        } catch (err) {
+            console.error("Error fetching intents:", err);
+            displayMessage('System', 'Failed to fetch available intents.', true);
+            return;
+        }
+
+        let botMsg = "What should the correct intent be?\nAvailable intents:\n";
+        intents.forEach((intent, i) => {
+            botMsg += `  ${i + 1}. ${intent}\n`;
+        });
+
+        await displayTypingMessage('Bot', botMsg);
+        isAwaitingCorrection = true;
+    }
+
+    async function sendCorrection(correctIntent) {
+        try {
+            const res = await fetch('/feedback', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    last_user_input: lastUserMessage,
+                    correct_intent: correctIntent
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                await displayTypingMessage('Bot', data.message || "Thank you! I'll remember that.");
+                lastUserMessage = "";
+            } else {
+                await displayTypingMessage('Bot', data.error || "Invalid intent tag. Feedback not recorded.");
+            }
+        } catch (error) {
+            console.error('Feedback error:', error);
+            await displayTypingMessage('System', 'Error sending feedback to server.', true);
+        }
+    }
+</script>
 </body>
 </html>
