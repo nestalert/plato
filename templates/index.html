@@ -198,7 +198,7 @@
                 chatContainer.classList.remove('hidden');
                 userInput.disabled = false;
                 sendButton.disabled = false;
-                await displayTypingMessage('Bot', data.welcome_message || "Chatbot initialized!");
+                await displayTypingMessage('Bot', data.welcome_message);
                 await displayTypingMessage('Bot', "My name is PLATO, what can I help you with today?");
             } else {
                 loginError.textContent = `Initialization failed: ${data.message || 'Unknown error'}`;

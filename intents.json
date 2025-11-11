@@ -202,7 +202,7 @@
       ],
       "responses": [
         "I'm not sure I understand. Could you rephrase that or type 'help' for options?",
-        "I cannot have conversations. If your issue is too abstract, kindly contact administration: [[administration]]",
+        "I don't understand. If your issue is too abstract, kindly contact administration: [[administration]]",
         "I don't understand. Please try to use more keywords relevant to your query."
       ],
       "context_set": "" 

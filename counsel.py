@@ -45,6 +45,7 @@ def suggestions(uname, pwd, period="F"):
 
     class_details = {}
     elective = "M"
+    mandatory = "M"
     elective_S = 0
     elective_H = 0
     elective_N = 0
@@ -58,10 +59,13 @@ def suggestions(uname, pwd, period="F"):
             elective_N += 1
     if(elective_S>=elective_H and elective_S>=elective_N):
         elective = "ES"
+        mandatory = "MS"
     if(elective_H>=elective_S and elective_H>=elective_N):
         elective = "EH"
+        mandatory = "MH"
     if(elective_N>=elective_H and elective_N>=elective_S):
         elective = "EN"
+        mandatory = "MN"
 
     for row in eligible:
         class_id = row[1]
@@ -87,9 +91,10 @@ def suggestions(uname, pwd, period="F"):
     def sort_key_function(class_info):
         almost_passed_priority = not (class_info['grade'] >= 3.5)
         mandatory_priority = not (class_info['orientation'] == 'M')
+        mandatory_elective_priority = not (class_info['orientation'] == mandatory)
         elective_priority = not (class_info['orientation'] == elective)
         semester_priority = class_info['semester']
-        return (almost_passed_priority, mandatory_priority,elective_priority, semester_priority)
+        return (almost_passed_priority, mandatory_priority,mandatory_elective_priority,elective_priority, semester_priority)
 
     suggestable_classes.sort(key=sort_key_function)
 

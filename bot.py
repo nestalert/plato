@@ -9,8 +9,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-warnings.filterwarnings("ignore", category=UserWarning) 
-
 class IntentChatbot:
     def __init__(self, class_suggestions, intents_file='intents.json', links_file='links.json', 
                  professors_file='professors.json', model_file='chatbot_model.pkl',
@@ -28,9 +26,7 @@ class IntentChatbot:
         self.pattern_vectors = None
         self.pattern_tags = []
         self.tag_to_intent = {}
-        
-        # Relevance feedback storage
-        self.feedback_data = {}  # {user_query: {'correct_tag': tag, 'weight': weight}}
+        self.feedback_data = {} 
         self.feedback_vectors = None
         self.feedback_tags = []
         self.feedback_weights = []
@@ -278,6 +274,8 @@ class IntentChatbot:
         intents_list = []
         for intent in self.intents:
             tag = intent['tag']
+            if tag == "fallback":
+                continue
             example = intent['patterns'][0] if intent['patterns'] else 'N/A'
             intents_list.append(f"{tag}: {example}")
         return intents_list
