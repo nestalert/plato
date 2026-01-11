@@ -29,7 +29,8 @@
         "What are my options?", 
         "Can you assist me?", 
         "Tell me what you know", 
-        "What services do you offer?", 
+        "What services do you offer?",
+        "What can I do", 
         "I'm stuck"
       ],
       "responses": [
@@ -92,6 +93,24 @@
       "context_set": ""
     },
     {
+      "tag": "assignment",
+      "patterns": [
+        "What assignments are due?",
+        "Do I have any assignments due soon?",
+        "When is the next assignment due?",
+        "Show me my upcoming assignments",
+        "List my assignments",
+        "What assignments do I need to finish?",
+        "Due dates for assignments",
+        "Check assignments for [course name]",
+        "Assignment deadlines"
+      ],
+      "responses": [
+        "If you wish to see your assigments, you need to log in."
+      ],
+      "context_set": ""
+    },
+    {
       "tag": "teacher",
       "patterns": [
         "Contact",
@@ -139,7 +158,9 @@
         "Upcoming activities",
         "Student union events",
         "Are there any special lectures this week?",
-        "What is happening"
+        "What is happening",
+        "What should I do",
+        "What to do"
       ],
       "responses": [
         "There's always something happening in the university! Check the events page for more: [[events]] "
@@ -176,6 +197,23 @@
       ],
       "responses": [
         "We are located in Campus 1. To learn more about reaching Campus 1, click here: [[transport]]"
+      ],
+      "context_set": "" 
+    },
+    {
+      "tag": "appointment",
+      "patterns": [
+        "Show me my calendar",
+        "Appointments",
+        "show me my appointments",
+        "What have I written down",
+        "Show me what I forgot",
+        "Calendar",
+        "Who was I meeting",
+        "What was I supposed to do today"
+      ],
+      "responses": [
+        ""
       ],
       "context_set": "" 
     },

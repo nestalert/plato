@@ -37,6 +37,30 @@ CREATE TABLE GRADE
     FOREIGN KEY (CLASS_ID) REFERENCES CLASS(CLASS_ID)
 );
 
+CREATE TABLE ASSIGNMENT
+(
+    ASSIGNMENT_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    CLASS_ID VARCHAR(20) NOT NULL,
+    NAME VARCHAR(100),
+    DESCRIPTION VARCHAR(1000),
+    STUDENT_ID VARCHAR(20) NOT NULL,
+    START_DATE DATETIME NOT NULL,
+    END_DATE DATETIME NOT NULL,
+    SUBMITTED BOOLEAN DEFAULT FALSE,
+    IMPORTANCE INT,
+    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID),
+    FOREIGN KEY (CLASS_ID) REFERENCES CLASS(CLASS_ID)
+);
+CREATE TABLE APPOINTMENT
+(
+	APPOINTMENT_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	STUDENT_ID VARCHAR(20) NOT NULL,
+    NAME VARCHAR(100),
+    DESCRIPTION VARCHAR(1000),
+    APP_TIME DATETIME,
+    FOREIGN KEY (STUDENT_ID) REFERENCES STUDENT(STUDENT_ID)
+);
+
 INSERT INTO STUDENT (STUDENT_ID,PASSWORD,NAME,EMAIL,SEMESTER) VALUES
 	('ice1','abc123','Rory Williams','ice1@uniwa.gr',1),
     ('ice2','11051989','Amy Pond','ice2@uniwa.gr',5),
@@ -171,4 +195,13 @@ SET
     g.GRADE = rand_grades.NEW_GRADE,
     g.PASSED = rand_grades.NEW_GRADE >= 5.0;
 
-SELECT * FROM GRADE;
+INSERT INTO ASSIGNMENT (CLASS_ID,NAME,DESCRIPTION,STUDENT_ID,START_DATE,END_DATE) VALUES
+    ('ICE1-3005', 'Homework 1: SQL Basics','Complete the SQL exercises from Chapter 1.','ice1',NOW(),NOW() + INTERVAL 70 DAY),
+    ('ICE1-7203','Project Proposal','Submit a one-page proposal for your final project.','ice1',NOW(),NOW() + INTERVAL 140 DAY),
+    ('ICE1-7308','Quiz 1','Online quiz covering week 1-2 material.','ice1',NOW(),NOW() + INTERVAL 30 DAY),
+    ('ICE1-3005','Homework 1: SQL Basics','Complete the SQL exercises from Chapter 1.','ice2',NOW(),NOW() + INTERVAL 70 DAY),
+    ('ICE1-7308','Lab Report 1','Submit your findings from the first lab.','ice2',NOW(),NOW() + INTERVAL 100 DAY),
+    ('ICE1-3005', 'Quiz 1', 'Online quiz covering week 1-2 material.', 'ice2', NOW(), NOW() + INTERVAL 300 DAY),
+    ('ICE1-7203', 'Project Proposal', 'Submit a one-page proposal for your final project.', 'ice3', NOW(), NOW() + INTERVAL 140 DAY),
+    ('ICE1-7308', 'Lab Report 1', 'Submit your findings from the first lab.', 'ice3', NOW(), NOW() + INTERVAL 100 DAY),
+    ('ICE1-3005', 'Homework 2: Normalization', 'Normalize the provided database schemas.', 'ice3', NOW(), NOW() + INTERVAL 90 DAY);

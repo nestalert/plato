@@ -31,6 +31,21 @@
             0%, 49% { opacity: 1; }
             50%, 100% { opacity: 0; }
         }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chat-widget-enter {
+            animation: slideIn 0.3s ease-out;
+        }
     </style>
     <script>
         tailwind.config = {
@@ -44,51 +59,110 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4 font-sans">
+<body class="bg-gray-50 font-sans">
     
-    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 md:p-8">
-        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Counsel Chatbot</h1>
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-6 md:p-8">
+            <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Counsel Chatbot</h1>
 
-        <div id="login-container">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Bot Initialization</h2>
-            <div id="login-error" class="mb-4 text-red-600 font-medium hidden"></div>
-            
-            <div class="mb-4">
-                <label for="uname-input" class="block text-sm font-medium text-gray-700 mb-1">Username (uname)</label>
-                <input type="text" id="uname-input" value="ice1"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-            </div>
-            
-            <div class="mb-6">
-                <label for="pwd-input" class="block text-sm font-medium text-gray-700 mb-1">Password (pwd)</label>
-                <input type="password" id="pwd-input" value="abc123"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-            </div>
-            
-            <button onclick="initBot()"
-                    class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                Initialize Chatbot
-            </button>
-            
-            <div id="loading-spinner" class="mt-4 text-center hidden">
-                <div class="animate-spin inline-block w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full" role="status"></div>
-                <span class="ml-2 text-sm text-gray-500">Connecting...</span>
+            <div id="login-container">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Bot Initialization</h2>
+                <div id="login-error" class="mb-4 text-red-600 font-medium hidden"></div>
+                
+                <div class="mb-4">
+                    <label for="uname-input" class="block text-sm font-medium text-gray-700 mb-1">Username (uname)</label>
+                    <input type="text" id="uname-input" value="ice1"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                </div>
+                
+                <div class="mb-6">
+                    <label for="pwd-input" class="block text-sm font-medium text-gray-700 mb-1">Password (pwd)</label>
+                    <input type="password" id="pwd-input" value="abc123"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                </div>
+                
+                <button onclick="initBot()"
+                        class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Initialize Chatbot
+                </button>
+                
+                <div id="loading-spinner" class="mt-4 text-center hidden">
+                    <div class="animate-spin inline-block w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full" role="status"></div>
+                    <span class="ml-2 text-sm text-gray-500">Connecting...</span>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div id="chat-container" class="hidden">
-            <div id="chat-box" class="h-80 bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4 overflow-y-scroll space-y-2">
+    <!-- Main Website Content -->
+    <div id="main-content" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <h1 class="text-3xl font-bold text-gray-900">Welcome to Our Website</h1>
             </div>
-            
-            <div class="flex">
-                <input type="text" id="user-input" placeholder="Type your message..." disabled
-                       class="flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                <button onclick="sendMessage()" disabled id="send-button"
-                        class="p-3 bg-indigo-600 text-white rounded-r-lg shadow-md hover:bg-indigo-700 transition duration-200 disabled:opacity-50">
-                    Send
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">About Us</h2>
+                <p class="text-gray-600 mb-4">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+                <p class="text-gray-600 mb-4">
+                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Our Services</h3>
+                    <p class="text-gray-600">
+                        We provide excellent services to help you achieve your goals. Our team is dedicated to delivering quality solutions tailored to your needs.
+                    </p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-3">Contact Information</h3>
+                    <p class="text-gray-600">
+                        Need help? Our support team is available 24/7. Click the chat button in the corner to speak with our AI assistant PLATO.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Chat Button -->
+        <button id="chat-toggle-btn" onclick="toggleChat()" 
+                class="fixed bottom-6 right-6 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-200 flex items-center justify-center z-40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        </button>
+
+        <!-- Chat Widget -->
+        <div id="chat-widget" class="fixed bottom-24 right-6 w-96 bg-white rounded-xl shadow-2xl hidden z-40">
+            <div class="bg-indigo-600 text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+                <h2 class="text-lg font-semibold">PLATO Assistant</h2>
+                <button onclick="toggleChat()" class="text-white hover:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
-            <div class="flex mt-2">
+            
+            <div id="chat-box" class="h-96 bg-gray-100 p-3 overflow-y-scroll space-y-2">
+            </div>
+            
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex mb-2">
+                    <input type="text" id="user-input" placeholder="Type your message..." disabled
+                           class="flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                    <button onclick="sendMessage()" disabled id="send-button"
+                            class="p-3 bg-indigo-600 text-white rounded-r-lg shadow-md hover:bg-indigo-700 transition duration-200 disabled:opacity-50">
+                        Send
+                    </button>
+                </div>
                 <button onclick="correctResponse()"
                         id="correct-button"
                         class="w-full py-2 px-4 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 transition duration-200 disabled:opacity-50">
@@ -99,15 +173,17 @@
     </div>
 
     <script>
-    const loginContainer = document.getElementById('login-container');
-    const chatContainer = document.getElementById('chat-container');
+    const loginModal = document.getElementById('login-modal');
+    const mainContent = document.getElementById('main-content');
+    const chatWidget = document.getElementById('chat-widget');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     const loginError = document.getElementById('login-error');
     const loadingSpinner = document.getElementById('loading-spinner');
 
     let lastUserMessage = "";
-    let isAwaitingCorrection = false; // Track if we're waiting for user to type correct intent
+    let isAwaitingCorrection = false;
+    let chatOpen = false;
 
     // Allow 'Enter' key to send message only when chat is active
     userInput.addEventListener('keypress', function(event) {
@@ -117,11 +193,21 @@
         }
     });
 
+    function toggleChat() {
+        chatOpen = !chatOpen;
+        if (chatOpen) {
+            chatWidget.classList.remove('hidden');
+            chatWidget.classList.add('chat-widget-enter');
+            userInput.focus();
+        } else {
+            chatWidget.classList.add('hidden');
+        }
+    }
+
     function displayMessage(sender, text, isSystem = false) {
         const chatBox = document.getElementById('chat-box');
         const p = document.createElement('p');
 
-        // Apply classes based on sender
         let senderClass = sender === 'You' ? 'text-right' : 'text-left';
         let bubbleClass = sender === 'You' 
             ? 'bg-indigo-500 text-white ml-auto' 
@@ -131,7 +217,6 @@
         const outerDiv = document.createElement('div');
         outerDiv.className = `${senderClass} flex`;
 
-        // Handle links and line breaks
         let formattedText = text.replace(/\n/g, '<br>');
         const urlRegex = /(\b(https?:\/\/[^\s]+))/g;
         formattedText = formattedText.replace(urlRegex, url => 
@@ -194,8 +279,8 @@
             const res = await fetch(`/init_bot?uname=${encodeURIComponent(uname)}&pwd=${encodeURIComponent(pwd)}`);
             const data = await res.json();
             if (res.ok) {
-                loginContainer.classList.add('hidden');
-                chatContainer.classList.remove('hidden');
+                loginModal.classList.add('hidden');
+                mainContent.classList.remove('hidden');
                 userInput.disabled = false;
                 sendButton.disabled = false;
                 await displayTypingMessage('Bot', data.welcome_message);
@@ -289,10 +374,10 @@
             });
             const data = await res.json();
             if (res.ok) {
-                await displayTypingMessage('Bot', data.message || "Thank you! I'll remember that.");
+                await displayTypingMessage('Bot', data.message);
                 lastUserMessage = "";
             } else {
-                await displayTypingMessage('Bot', data.error || "Invalid intent tag. Feedback not recorded.");
+                await displayTypingMessage('Bot', data.error);
             }
         } catch (error) {
             console.error('Feedback error:', error);

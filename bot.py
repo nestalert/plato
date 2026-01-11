@@ -3,20 +3,25 @@ import random
 import re
 import os
 import pickle
-import warnings
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
+import mysql.connector
+from datetime import datetime
+
 class IntentChatbot:
-    def __init__(self, class_suggestions, intents_file='intents.json', links_file='links.json', 
+    def __init__(self, uname,pwd,class_suggestions,assignments, intents_file='intents.json', links_file='links.json', 
                  professors_file='professors.json', model_file='chatbot_model.pkl',
                  feedback_file='feedback_data.pkl'):
         self.intents_file = intents_file
         self.links_file = links_file
         self.professors_file = professors_file
         self.class_suggestions = class_suggestions
+        self.assignments = assignments
+        self.uname = uname
+        self.pwd = pwd
         self.model_file = model_file
         self.feedback_file = feedback_file
         self.intents = None
@@ -25,23 +30,35 @@ class IntentChatbot:
         self.vectorizer = None
         self.pattern_vectors = None
         self.pattern_tags = []
+        self.pattern_lookup = {}
         self.tag_to_intent = {}
         self.feedback_data = {} 
         self.feedback_vectors = None
         self.feedback_tags = []
         self.feedback_weights = []
-        
+        self.context = None
+        self.buffer = {}
+
         self.load_json()
         self.load_feedback()
         self.load_or_train_model()
         
     def load_json(self):
         with open(self.intents_file, 'r', encoding='utf-8') as f:
-            self.intents = json.load(f)
+            self.intents = json.load(f)   
+        self.pattern_lookup = {}
+        for intent in self.intents:
+            tag = intent['tag']
+            for pattern in intent['patterns']:
+                clean_pattern = pattern.lower().strip()
+                self.pattern_lookup[clean_pattern] = tag
+                if clean_pattern.endswith('?'):
+                    self.pattern_lookup[clean_pattern.rstrip('?')] = tag
+                
         with open(self.links_file, 'r', encoding='utf-8') as f:
             self.links = json.load(f)
         with open(self.professors_file, 'r', encoding='utf-8') as f:
-            self.professors = json.load(f)  
+            self.professors = json.load(f)
 
     def load_feedback(self):
         """Load previously saved feedback data"""
@@ -124,18 +141,166 @@ class IntentChatbot:
         
         return response.strip()
 
+
+
+    def handle_appointment_flow(self, user_input):
+        user_input = user_input.strip()
+        
+        # Global cancel command
+        if user_input.lower() in ['cancel', 'stop', 'quit']:
+            self.context = None
+            self.buffer = {}
+            return "Operation cancelled."
+
+        # --- CREATE FLOW ---
+        if self.context == "appt_create_name":
+            self.buffer['name'] = user_input
+            self.context = "appt_create_desc"
+            return "Type a short description about the appointment."
+
+        elif self.context == "appt_create_desc":
+            self.buffer['description'] = user_input
+            self.context = "appt_create_time"
+            return "Give the date and time of the appointment (e.g., '2023-12-01 14:00')"
+
+        elif self.context == "appt_create_time":
+            # DATE VALIDATION LOGIC
+            try:
+                # Try to parse the string into a datetime object
+                valid_date = datetime.strptime(user_input, "%Y-%m-%d %H:%M")
+                self.buffer['app_time'] = user_input # Store original string if valid
+                
+                # Save to Database
+                success, msg = self.save_appointment_to_db()
+                
+                # Reset State
+                self.context = None
+                self.buffer = {}
+                return msg
+                
+            except ValueError:
+                return "Invalid format. Please use YYYY-MM-DD HH:MM (e.g., 2023-12-01 14:00)."
+
+        elif self.context == "appt_delete_select":
+            if not user_input.isdigit():
+                return "Please enter a valid numeric ID."
+                
+            appt_id = int(user_input)
+            success, msg = self.delete_appointment_from_db(appt_id)
+            
+            self.context = None
+            return msg
+        
+        else:
+            return "Error: Unknown state."
+
+    def save_appointment_to_db(self):
+        try:
+            mydb = mysql.connector.connect(
+                host="localhost", user="root", password="", database="uniwa"
+            )
+            cursor = mydb.cursor()
+            
+            query = """INSERT INTO APPOINTMENT 
+                    (STUDENT_ID, NAME, DESCRIPTION, APP_TIME) 
+                    VALUES (%s, %s, %s, %s)"""
+            values = (self.uname, self.buffer['name'], 
+                    self.buffer['description'], self.buffer['app_time'])
+            
+            cursor.execute(query, values)
+            mydb.commit()
+            cursor.close()
+            mydb.close()
+            return True, "Appointment successfully scheduled!"
+        except Exception as e:
+            print(f"DB Error: {e}")
+            return False, "Failed to write appointment to database."
+
+    def delete_appointment_from_db(self, appt_id):
+        try:
+            mydb = mysql.connector.connect(
+                host="localhost", user="root", password="", database="uniwa"
+            )
+            cursor = mydb.cursor()
+            
+            check_query = "SELECT * FROM APPOINTMENT WHERE APPOINTMENT_ID = %s AND STUDENT_ID = %s"
+            cursor.execute(check_query, (appt_id, self.uname))
+            if not cursor.fetchone():
+                return False, "Appointment not found or you don't have permission to delete it."
+
+            delete_query = "DELETE FROM APPOINTMENT WHERE APPOINTMENT_ID = %s"
+            cursor.execute(delete_query, (appt_id,))
+            mydb.commit()
+            cursor.close()
+            mydb.close()
+            return True, f"Appointment {appt_id} has been deleted."
+        except Exception as e:
+            print(f"DB Error: {e}")
+            return False, "Failed to delete appointment."
+    
+    def appointment_read(self):
+        uname = self.uname
+        try:
+            mydb = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="",
+                database="uniwa"
+            )
+        except mysql.connector.Error as err:
+            print("Server is offline, logging in as guest...")
+            return
+
+        mycursor = mydb.cursor()
+        query = """
+            SELECT APPOINTMENT_ID,NAME, DESCRIPTION, APP_TIME
+            FROM APPOINTMENT
+            WHERE STUDENT_ID = %s
+        """
+        mycursor.execute(query, (uname,))
+        results = mycursor.fetchall()
+
+        if not results:
+            return "No appointments were found."
+        now = datetime.now()
+
+
+        appointments = []
+        for appointment_id,name, description, app_time in results:
+            time_difference = app_time - now
+            days_until = time_difference.days
+            total_seconds_diff = time_difference.total_seconds()
+            if total_seconds_diff < 0:
+                continue
+            else:
+                appointments.append(
+                    f"ID: {appointment_id}. In {days_until} days. {name}. {description}. {app_time}"
+                )
+
+        return "\n".join(appointments)
+
     def preprocess_text(self, text):
         text = text.lower()
         text = re.sub(r'[^\w\s]', '', text)
         words = text.split()
 
-        if len(words) <= 2:  # if the query is short.
+        if len(words) < 4:  
             return " ".join(words)
 
         stop_words = set(stopwords.words('english'))
         stemmer = PorterStemmer()
-        words = [stemmer.stem(w) for w in words if w not in stop_words]
-        return " ".join(words)
+        
+        important_words = {'what', 'where', 'when', 'how', 'who', 'why'}
+        
+        filtered_words = []
+        for w in words:
+            if w in important_words or w not in stop_words:
+                filtered_words.append(stemmer.stem(w))
+        
+        if not filtered_words:
+            return " ".join([stemmer.stem(w) for w in words])
+
+        return " ".join(filtered_words)
     
     def prepare_training_data(self):
         patterns = []
@@ -217,6 +382,15 @@ class IntentChatbot:
             self.train()
     
     def predict_intent(self, user_input):
+        clean_input = user_input.lower().strip()
+        
+        if clean_input in self.pattern_lookup:
+            return self.pattern_lookup[clean_input], 1.0
+            
+        clean_input_no_punct = clean_input.rstrip('?.!')
+        if clean_input_no_punct in self.pattern_lookup:
+             return self.pattern_lookup[clean_input_no_punct], 1.0
+
         processed_input = self.preprocess_text(user_input)
         input_vector = self.vectorizer.transform([processed_input])
         
@@ -227,9 +401,7 @@ class IntentChatbot:
         
         if self.feedback_vectors is not None and len(self.feedback_tags) > 0:
             feedback_similarities = cosine_similarity(input_vector, self.feedback_vectors)[0]
-            
             weighted_feedback = feedback_similarities * np.array(self.feedback_weights)
-            
             best_feedback_idx = np.argmax(weighted_feedback)
             best_feedback_similarity = weighted_feedback[best_feedback_idx]
             
@@ -240,6 +412,16 @@ class IntentChatbot:
         return predicted_tag, best_similarity
     
     def get_response(self, user_input, confidence_threshold=0.2, ask_feedback=True):
+        if self.context is not None:
+            response = self.handle_appointment_flow(user_input)
+            return response, "appointment_flow"
+        
+        if user_input.lower() == "create appointment":
+            self.context = "appt_step_name"
+
+        if user_input.lower() == "delete appointment":
+            self.context = "appt_delete_select"
+
         professor = self.detect_professor(user_input)
         if professor:
             return self.format_professor_info(professor), None
@@ -247,7 +429,7 @@ class IntentChatbot:
         predicted_tag, confidence = self.predict_intent(user_input)
         
         word_count = len(user_input.split())
-        if word_count <= 2:  # If input is short, go easy
+        if word_count <= 3:  # If input is short, go easy
             confidence_threshold = 0.1
 
         if confidence < confidence_threshold:
@@ -262,6 +444,37 @@ class IntentChatbot:
                 printed_output += f"{i}. {course}\n"
             printed_output += "You can also check the Schedule at any time: [[Schedule]]"
             response = printed_output
+        
+        if predicted_tag == "assignment":
+            printed_output = "Checking your assignments now...\n"
+            if not self.assignments:
+                printed_output += "You have no assignments. Good for you!"
+            else:
+                for i, assignment in enumerate(self.assignments, start=1):
+                    printed_output += (
+                        f"{i}. {assignment['due_status']} ({assignment['end_date']}): "
+                        f"{assignment['name']}. {assignment['description']}. IN: "
+                        f"{assignment['course_name']}\n"
+                    )
+            response = printed_output
+
+        if predicted_tag == "appointment":
+            printed_output = self.appointment_read()
+            printed_output += "\nIf you wish to add an appointment, type 'create appointment'."
+            printed_output += "\nIf you wish to delete an appointment, type 'delete appointment'."
+            response = printed_output
+
+        if self.context == "appt_delete_select":
+            current_appointments = self.appointment_read()
+            if "No appointments were found." in current_appointments:
+                response = "You have no appointments to delete."
+                self.context = None
+            else:
+                response = f"Here are your current appointments:\n{current_appointments}\n\nPlease enter the ID of the appointment you wish to delete."
+            
+        if self.context == "appt_step_name":
+            self.context = "appt_create_name"
+            response = "What is the title of the appointment?"
 
         return response, (predicted_tag if ask_feedback else None)
 

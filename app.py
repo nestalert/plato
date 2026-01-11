@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from counsel import suggestions 
 from bot import IntentChatbot
-
+from assignments import check_assignments
 GLOBAL_BOT = None 
 WELCOME_MESSAGE = None
 BOT_INITIALIZED = False
@@ -16,9 +16,12 @@ def initialize_chatbot(uname, pwd):
         if result is None:
             class_suggestions = None
             welcome_message = "Logging in as guest..."
+            assignments = None
         else:
             class_suggestions,welcome_message = result
-        GLOBAL_BOT = IntentChatbot(class_suggestions)
+            assignments = check_assignments(uname,pwd)
+
+        GLOBAL_BOT = IntentChatbot(uname,pwd,class_suggestions,assignments)
         WELCOME_MESSAGE = welcome_message
         BOT_INITIALIZED = True
         return True, welcome_message
