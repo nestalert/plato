@@ -81,6 +81,8 @@ def check_assignments(uname, pwd):
                 else:
                     days_until_due = max(0, days_until_due + 1) 
                     due_string = f"Due in {days_until_due} days"
+                    if days_until_due <= 5:
+                        due_string += " (ALMOST DUE)"
 
                 formatted_date = end_date_dt.strftime('%d %B %Y, %H:%M:%S')
 

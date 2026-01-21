@@ -266,6 +266,7 @@ class IntentChatbot:
 
 
         appointments = []
+        appointments.append(f"==========")
         for appointment_id,name, description, app_time in results:
             time_difference = app_time - now
             days_until = time_difference.days
@@ -274,7 +275,7 @@ class IntentChatbot:
                 continue
             else:
                 appointments.append(
-                    f"ID: {appointment_id}. In {days_until} days. {name}. {description}. {app_time}"
+                    f"{name}\n In {days_until} days ({app_time})\n {description}\n=========="
                 )
 
         return "\n".join(appointments)
@@ -417,7 +418,7 @@ class IntentChatbot:
             return response, "appointment_flow"
         
         if user_input.lower() == "create appointment":
-            self.context = "appt_step_name"
+            self.context = "appt_create_name"
 
         if user_input.lower() == "delete appointment":
             self.context = "appt_delete_select"
@@ -472,8 +473,7 @@ class IntentChatbot:
             else:
                 response = f"Here are your current appointments:\n{current_appointments}\n\nPlease enter the ID of the appointment you wish to delete."
             
-        if self.context == "appt_step_name":
-            self.context = "appt_create_name"
+        if self.context == "appt_create_name":
             response = "What is the title of the appointment?"
 
         return response, (predicted_tag if ask_feedback else None)
