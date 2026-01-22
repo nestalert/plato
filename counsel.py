@@ -1,13 +1,10 @@
 import mysql.connector
+from db_connector import db_manager
 
 def suggestions(uname, pwd, period="F"):
     try:
-        mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="uniwa"
-        )
+        mydb = db_manager.get_connection()
+        mycursor = mydb.cursor()
     except mysql.connector.Error as err:
         print("Server is offline, logging in as guest...")
         return

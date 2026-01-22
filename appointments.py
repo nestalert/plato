@@ -1,25 +1,12 @@
 import mysql.connector
 from datetime import datetime
+from db_connector import db_manager
     
 class DatabaseManager:
     
-    def __init__(self, host="localhost", user="root", password="", database="uniwa"):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-    
-    def _get_connection(self):
-        return mysql.connector.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database
-        )
-    
     def save_appointment(self, student_id, name, description, app_time):
         try:
-            mydb = self._get_connection()
+            mydb = db_manager.get_connection()
             cursor = mydb.cursor()
             
             query = """INSERT INTO APPOINTMENT 
@@ -38,7 +25,7 @@ class DatabaseManager:
     
     def delete_appointment(self, appointment_id, student_id):
         try:
-            mydb = self._get_connection()
+            mydb = db_manager.get_connection()
             cursor = mydb.cursor()
             
             check_query = "SELECT * FROM APPOINTMENT WHERE APPOINTMENT_ID = %s AND STUDENT_ID = %s"
@@ -60,7 +47,7 @@ class DatabaseManager:
     
     def get_appointments(self, student_id):
         try:
-            mydb = self._get_connection()
+            mydb = db_manager.get_connection()
         except mysql.connector.Error as err:
             print("Server is offline, logging in as guest...")
             return []
