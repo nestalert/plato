@@ -9,7 +9,9 @@ from nltk.stem import PorterStemmer
 
 class NLPProcessor:
     
-    def __init__(self, intents, model_file='chatbot_model.pkl', feedback_file='feedback_data.pkl'):
+    def __init__(self, intents):
+        model_file='tfidf_model.pkl'
+        feedback_file='tfidf_feedback.pkl'
         self.intents = intents
         self.model_file = model_file
         self.feedback_file = feedback_file

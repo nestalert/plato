@@ -1,5 +1,5 @@
 import mysql.connector
-from datetime import datetime, date, timedelta
+from datetime import datetime
 
 def check_assignments(uname, pwd):
     try:
@@ -18,9 +18,9 @@ def check_assignments(uname, pwd):
     while True:
         if uname is None:
             uname = "guest"
+            pwd = "guest"
             
         if uname.lower() in ("guest"):
-            print("Logging in as guest...")
             mycursor.close()
             mydb.close()
             return []
@@ -55,7 +55,6 @@ def check_assignments(uname, pwd):
         if not assignments:
             print("\nYou currently have no pending assignments.")
         else:
-            print("\nPreparing your upcoming assignments list...\n")
             
             now = datetime.now()
 
@@ -76,13 +75,12 @@ def check_assignments(uname, pwd):
                 
                 if total_seconds_diff < 0:
                     due_string = "OVERDUE"
-                elif days_until_due == 0:
-                    due_string = "Due TODAY"
+                elif days_until_due <= 0:
+                    due_string = "Due soon"
                 else:
                     days_until_due = max(0, days_until_due + 1) 
                     due_string = f"Due in {days_until_due} days"
-                    if days_until_due <= 5:
-                        due_string += " (ALMOST DUE)"
+
 
                 formatted_date = end_date_dt.strftime('%d %B %Y, %H:%M:%S')
 

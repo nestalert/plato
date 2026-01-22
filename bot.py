@@ -3,12 +3,11 @@ import random
 import os
 from appointments import DatabaseManager,AppointmentHandler
 from professor import ProfessorHandler
-from nlp_engine import NLPProcessor
+from transformer_engine import NLPProcessor
 
 class IntentChatbot:
     def __init__(self, uname, pwd, class_suggestions, assignments,
-                 intents_file='intents.json', links_file='links.json', professors_file='professors.json',
-                 model_file='chatbot_model.pkl', feedback_file='feedback_data.pkl'):
+                 intents_file='intents.json', links_file='links.json', professors_file='professors.json'):
         
         self.intents_file = intents_file
         self.links_file = links_file
@@ -23,7 +22,7 @@ class IntentChatbot:
         
         self.db_manager = DatabaseManager()
         self.professor_handler = ProfessorHandler(professors_file)
-        self.nlp_processor = NLPProcessor(self.intents, model_file, feedback_file)
+        self.nlp_processor = NLPProcessor(self.intents)
         self.appointment_handler = AppointmentHandler(self.db_manager, uname)
         
         self.load_or_train_model()
@@ -58,7 +57,7 @@ class IntentChatbot:
         
         self.nlp_processor.load_feedback()
     
-    def get_response(self, user_input, confidence_threshold=0.2, ask_feedback=True):
+    def get_response(self, user_input, confidence_threshold=0.45, ask_feedback=True):
         if self.appointment_handler.is_active():
             response = self.appointment_handler.handle_flow(user_input)
             return response, "appointment_flow"
@@ -72,12 +71,10 @@ class IntentChatbot:
         professor = self.professor_handler.detect_professor(user_input)
         if professor:
             return self.professor_handler.format_professor_info(professor), None
-        
+
         predicted_tag, confidence = self.nlp_processor.predict_intent(user_input)
         
-        word_count = len(user_input.split())
-        if word_count <= 3:
-            confidence_threshold = 0.1
+        print(f"Debug: Input='{user_input}', Pred='{predicted_tag}', Conf={confidence:.2f}")
 
         if confidence < confidence_threshold:
             predicted_tag = "fallback"
@@ -86,24 +83,24 @@ class IntentChatbot:
         response = random.choice(intent['responses'])
 
         if predicted_tag == "class_selection" and self.class_suggestions:
-            response = self._format_class_suggestions()
+            response = self.format_class_suggestions()
         
         if predicted_tag == "assignment":
-            response = self._format_assignments()
+            response = self.format_assignments()
 
         if predicted_tag == "appointment":
-            response = self._format_appointments()
+            response = self.format_appointments()
 
         return response, (predicted_tag if ask_feedback else None)
 
-    def _format_class_suggestions(self):
+    def format_class_suggestions(self):
         output = "Based on your record, we recommend the following classes:\n"
         for i, course in enumerate(self.class_suggestions, start=1):
             output += f"{i}. {course}\n"
         output += "You can also check the Schedule at any time: [[Schedule]]"
         return output
     
-    def _format_assignments(self):
+    def format_assignments(self):
         output = "Checking your assignments now...\n"
         if not self.assignments:
             output += "You have no assignments. Good for you!"
@@ -116,7 +113,7 @@ class IntentChatbot:
                 )
         return output
 
-    def _format_appointments(self):
+    def format_appointments(self):
         output = self.appointment_handler.read_appointments()
         output += "\nIf you wish to add an appointment, type 'create appointment'."
         output += "\nIf you wish to delete an appointment, type 'delete appointment'."

@@ -36,11 +36,6 @@ app = Flask(__name__)
 def init_bot():
     uname = request.args.get('uname')
     pwd = request.args.get('pwd')
-    
-    if not uname or not pwd:
-        return jsonify({
-            "message": "Error: Both 'uname' and 'pwd' query parameters are required for initialization."
-        }), 400
         
     success, result_message = initialize_chatbot(uname, pwd)
     

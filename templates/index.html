@@ -267,11 +267,6 @@
     async function initBot() {
         const uname = document.getElementById('uname-input').value.trim();
         const pwd = document.getElementById('pwd-input').value.trim();
-        if (!uname || !pwd) {
-            loginError.textContent = "Please enter both username and password.";
-            loginError.classList.remove('hidden');
-            return;
-        }
         loadingSpinner.classList.remove('hidden');
         loginError.classList.add('hidden');
 
