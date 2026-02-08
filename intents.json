@@ -11,14 +11,12 @@
         "Hey there", 
         "Greetings", 
         "Howdy", 
-        "Yo",
-        "Wake up"
+        "Yo"
       ],
       "responses": [
         "Hello! How can I assist you with university information today?", 
         "Hi there, what can I help you find?"
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "help",
@@ -35,8 +33,7 @@
       ],
       "responses": [
         "I can help you with finding your schedule, class, contact information, or suggest classes for you to take."
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "schedule",
@@ -52,8 +49,7 @@
       "responses": [
         "See the schedule for information on the time and place of classes: [[Schedule]]", 
         "The schedule with the location and time of classes can be found here: [[Schedule]]"
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "map",
@@ -69,8 +65,7 @@
       "responses": [
         "If you're lost, you can use the interactive map: [[map]]",
         "The map is here: [[map]]. Remember, if your class is e.g. K16.213, K16 denotes the building, while the first digit after the dot (2) denotes the floor."
-      ],
-      "context_set": ""
+      ]
     },      
     {
       "tag": "class_selection",
@@ -89,8 +84,7 @@
       ],
       "responses": [
         "You could check out the Schedule for undergraduates: [[Schedule]], or log in for personal advisement."
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "assignment",
@@ -107,8 +101,7 @@
       ],
       "responses": [
         "If you wish to see your assigments, you need to log in."
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "teacher",
@@ -128,8 +121,7 @@
       ],
       "responses": [
         "All contact information can be found on the faculty page: [[faculty]]. If you type the specific name of the teacher, I can give you their contact information."
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "admin",
@@ -145,8 +137,7 @@
       "responses": [
         "You can contact administration here: [[administration]]",
         "Administration can be reached here: [[administration]]"
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "event",
@@ -180,8 +171,7 @@
       ],
       "responses": [
         "You should read up on the postgrad page: [[postgrad]]"
-      ],
-      "context_set": ""
+      ]
     },
     {
       "tag": "location",
@@ -197,8 +187,7 @@
       ],
       "responses": [
         "We are located in Campus 1. To learn more about reaching Campus 1, click here: [[transport]]"
-      ],
-      "context_set": "" 
+      ]
     },
     {
       "tag": "appointment",
@@ -214,8 +203,7 @@
       ],
       "responses": [
         ""
-      ],
-      "context_set": "" 
+      ]
     },
     {
       "tag": "exit",
@@ -242,7 +230,6 @@
         "I'm not sure I understand. Could you rephrase that or type 'help' for options?",
         "I don't understand. If your issue is too abstract, kindly contact administration: [[administration]]",
         "I don't understand. Please try to use more keywords relevant to your query."
-      ],
-      "context_set": "" 
+      ]
     }
 ]
